@@ -107,21 +107,21 @@ public class PieView extends View {
 			winsPercent = ((float) games.getWins() / games.getTotal());
 		}
 		winsDegree = totalDegree * winsPercent;
-		winsText = "Win " + String.format("%.0f ", winsPercent * 100) + "%";
+		winsText = "Win " + String.format("%.0f", winsPercent * 100) + "%";
 
 		if (games != null) {
 			drawPercent = ((float) games.getDraws() / games.getTotal());
 		}
 		drawDegree = totalDegree * drawPercent;
 		drawStartDegree = startDegree - winsDegree;
-		drawsText = "Drawn " + String.format("%.0f ", drawPercent * 100) + "%";
+		drawsText = "Drawn " + String.format("%.0f", drawPercent * 100) + "%";
 
 		if (games != null) {
 			lossPercent = ((float) games.getLosses() / games.getTotal());
 		}
 		lossDegree = totalDegree * lossPercent;
 		lossStartDegree = startDegree - winsDegree - drawDegree;
-		lossText = "Loss " + String.format("%.0f ", lossPercent * 100) + "%";
+		lossText = "Loss " + String.format("%.0f", lossPercent * 100) + "%";
 
 		mDrawables[0] = new MyShapeDrawable(new ArcShape(startDegree, -winsDegree));
 		mDrawables[1] = new MyShapeDrawable(new ArcShape(drawStartDegree, -drawDegree));
