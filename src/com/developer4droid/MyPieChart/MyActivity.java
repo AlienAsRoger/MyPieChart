@@ -25,7 +25,7 @@ public class MyActivity extends Activity {
 		LinearLayout linearLayout = new LinearLayout(this);
 		linearLayout.setOrientation(LinearLayout.VERTICAL);
 		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-				400);
+				420);
 
 		pieView = new PieView(this);
 		chartView = new ChartView(this);
