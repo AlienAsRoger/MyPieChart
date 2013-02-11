@@ -31,13 +31,13 @@ public class PieView extends View {
 	private float winsPercent;
 	private float lossPercent;
 	private float drawPercent;
-	private int winsDegree;
-	private int totalDegree;
-	private int startDegree;
-	private int drawDegree;
-	private int drawStartDegree;
-	private int lossDegree;
-	private int lossStartDegree;
+	private float winsDegree;
+	private float totalDegree;
+	private float startDegree;
+	private float drawDegree;
+	private float drawStartDegree;
+	private float lossDegree;
+	private float lossStartDegree;
 
 	private String winsText;
 	private String lossText;
@@ -55,7 +55,7 @@ public class PieView extends View {
 	private int textGreyColor = 0xFF65605b;
 	private int backgroundColor;
 	private Paint textLegendPaint;
-	private int DONUT_WIDTH;
+	private static int DONUT_WIDTH;
 	private int DONUT_OVERLAY_SIZE;
 	private int centerPoint;
 	private Paint centerLinePaint;
@@ -105,21 +105,21 @@ public class PieView extends View {
 		if (games != null) {
 			winsPercent = ((float) games.getWins() / games.getTotal());
 		}
-		winsDegree = (int) (totalDegree * winsPercent);
+		winsDegree = totalDegree * winsPercent;
 		winsText = "Win " + String.format("%.0f ", winsPercent * 100) + "%";
 
 		if (games != null) {
 			drawPercent = ((float) games.getDraws() / games.getTotal());
 		}
-		drawDegree = (int) (totalDegree * drawPercent);
+		drawDegree = totalDegree * drawPercent;
 		drawStartDegree = startDegree - winsDegree;
 		drawsText = "Drawn " + String.format("%.0f ", drawPercent * 100) + "%";
 
 		if (games != null) {
 			lossPercent = ((float) games.getLosses() / games.getTotal());
 		}
-		lossDegree = (int) (totalDegree * lossPercent);
-		lossStartDegree = drawStartDegree - lossDegree;
+		lossDegree = totalDegree * lossPercent;
+		lossStartDegree = startDegree - winsDegree - drawDegree;
 		lossText = "Loss " + String.format("%.0f ", lossPercent * 100) + "%";
 
 		mDrawables[0] = new MyShapeDrawable(new ArcShape(startDegree, -winsDegree));
@@ -183,13 +183,11 @@ public class PieView extends View {
 				centerTextPaint.setTypeface(typeface);
 				centerTextPaint.setTextSize(14 * density + 0.5f);
 			}
-
 		}
-
 	}
 
 	private static Shader makeRadial(int color1, int color2) {
-		return new RadialGradient(150, 150, 150, color1, color2, Shader.TileMode.CLAMP);
+		return new RadialGradient(DONUT_WIDTH/2, DONUT_WIDTH/2, DONUT_WIDTH/2, color1, color2, Shader.TileMode.CLAMP);
 	}
 
 	@Override

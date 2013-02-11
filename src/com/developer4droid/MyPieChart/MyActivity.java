@@ -17,10 +17,10 @@ public class MyActivity extends Activity {
 		super.onCreate(savedInstanceState);
 
 		games = new GamesInfoByResult();
-		games.setTotal(5);
-		games.setWins(3);
-		games.setLosses(1);
-		games.setDraws(1);
+		games.setTotal(2147);
+		games.setWins(1183);
+		games.setLosses(833);
+		games.setDraws(131);
 
 		LinearLayout linearLayout = new LinearLayout(this);
 		linearLayout.setOrientation(LinearLayout.VERTICAL);
