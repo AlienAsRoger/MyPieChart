@@ -14,7 +14,7 @@
     <gradient
         android:angle="270"
         android:startColor="@color/white"
-        android:endColor="@color/green_1"
+        android:endColor="@color/chart_green_1"
         />
 
 

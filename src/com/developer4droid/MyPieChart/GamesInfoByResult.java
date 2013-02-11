@@ -6,7 +6,7 @@ package com.developer4droid.MyPieChart;
 * Date: 07.02.13
 * Time: 19:16
 */
-public class Games {
+public class GamesInfoByResult {
 	/*
 		  "total": 12,
 		  "wins": 7,

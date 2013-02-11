@@ -1,15 +1,13 @@
 package com.developer4droid.MyPieChart;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.RadialGradient;
-import android.graphics.Shader;
+import android.graphics.*;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.ArcShape;
 import android.graphics.drawable.shapes.OvalShape;
 import android.graphics.drawable.shapes.Shape;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 
@@ -21,8 +19,51 @@ import android.view.View;
  */
 public class PieView extends View {
 
+
+	private static final int TOP_OFFSET = 30;
+	private static final float LINE_LEFT_OFFSET = 10;
+	private int TEXT_WIDTH = 40;
+
+	public static final String MAIN_PATH = "fonts/trebuc-";
+
 	private ShapeDrawable[] mDrawables;
-	private Games games;
+	private GamesInfoByResult games;
+	private float winsPercent;
+	private float lossPercent;
+	private float drawPercent;
+	private int winsDegree;
+	private int totalDegree;
+	private int startDegree;
+	private int drawDegree;
+	private int drawStartDegree;
+	private int lossDegree;
+	private int lossStartDegree;
+
+	private String winsText;
+	private String lossText;
+	private String drawsText;
+
+	private int winsX;
+	private int winsY;
+	private int lossX;
+	private int lossY;
+	private int drawsX;
+	private int drawsY;
+
+	private int textGreenColor = 0xFF57832f;
+	private int textOrangeColor = 0xFFe48629;
+	private int textGreyColor = 0xFF65605b;
+	private int backgroundColor;
+	private Paint textLegendPaint;
+	private int DONUT_WIDTH;
+	private int DONUT_OVERLAY_SIZE;
+	private int centerPoint;
+	private Paint centerLinePaint;
+	private String winTotal;
+	private String lossTotal;
+	private String drawnTotal;
+	private Paint centerTextPaint;
+	private int INSIDE_TOP_TEXT_OFFSET;
 
 	public PieView(Context context) {
 		super(context);
@@ -37,7 +78,7 @@ public class PieView extends View {
 		super(context, attrs, defStyle);
 	}
 
-	public PieView(Context context, Games games) {
+	public PieView(Context context, GamesInfoByResult games) {
 		super(context);
 		this.games = games;
 		init(context);
@@ -46,104 +87,236 @@ public class PieView extends View {
 	private void init(Context context) {
 		setFocusable(true);
 
+		float density = context.getResources().getDisplayMetrics().density;
+
+		DONUT_WIDTH = (int) (174 * density);
+		DONUT_OVERLAY_SIZE = (int) (112 * density);
+		INSIDE_TOP_TEXT_OFFSET = (int) (8 * density);
+
+		backgroundColor = context.getResources().getColor(R.color.white);
+
 		mDrawables = new ShapeDrawable[4];
 
-		int totalDegree = 360;
+		totalDegree = 360;
 		// set wins
 		// calc percent
-		int startDegree = -90;
+		startDegree = -90;
 
-		float winsPercent = ((float) games.getWins() / games.getTotal());
-		int winsDegree = (int) (totalDegree * winsPercent);
+		if (games != null) {
+			winsPercent = ((float) games.getWins() / games.getTotal());
+		}
+		winsDegree = (int) (totalDegree * winsPercent);
+		winsText = "Win " + String.format("%.0f ", winsPercent * 100) + "%";
 
-		float losePercent = ((float) games.getLosses() / games.getTotal());
-		int lossesDegree = (int) (totalDegree * losePercent);
+		if (games != null) {
+			drawPercent = ((float) games.getDraws() / games.getTotal());
+		}
+		drawDegree = (int) (totalDegree * drawPercent);
+		drawStartDegree = startDegree - winsDegree;
+		drawsText = "Drawn " + String.format("%.0f ", drawPercent * 100) + "%";
 
-		int lossesStartDegree = startDegree - winsDegree;
-
-
-		float drawPercent = ((float) games.getDraws() / games.getTotal());
-		int drawDegree = (int) (totalDegree * drawPercent);
-
-		int drawStartDegree = lossesStartDegree - lossesDegree;
+		if (games != null) {
+			lossPercent = ((float) games.getLosses() / games.getTotal());
+		}
+		lossDegree = (int) (totalDegree * lossPercent);
+		lossStartDegree = drawStartDegree - lossDegree;
+		lossText = "Loss " + String.format("%.0f ", lossPercent * 100) + "%";
 
 		mDrawables[0] = new MyShapeDrawable(new ArcShape(startDegree, -winsDegree));
-		mDrawables[1] = new MyShapeDrawable(new ArcShape(lossesStartDegree, -lossesDegree));
-		mDrawables[2] = new MyShapeDrawable(new ArcShape(drawStartDegree, -drawDegree));
+		mDrawables[1] = new MyShapeDrawable(new ArcShape(drawStartDegree, -drawDegree));
+		mDrawables[2] = new MyShapeDrawable(new ArcShape(lossStartDegree, -lossDegree));
 		mDrawables[3] = new ShapeDrawable(new OvalShape());
 
-		mDrawables[3].getPaint().setColor(0xFFFFFFFF);
+		mDrawables[3].getPaint().setColor(backgroundColor);
 
-		int greenColor1 = context.getResources().getColor(R.color.green_1);
-		int greenColor2 = context.getResources().getColor(R.color.green_2);
+		int greenColor1 = context.getResources().getColor(R.color.chart_green_1);
+		int greenColor2 = context.getResources().getColor(R.color.chart_green_2);
 		mDrawables[0].getPaint().setShader(makeRadial(greenColor1, greenColor2));
 
-		int orangeColor1 = context.getResources().getColor(R.color.orange_1);
-		int orangeColor2 = context.getResources().getColor(R.color.orange_2);
-		mDrawables[1].getPaint().setShader(makeRadial(orangeColor1, orangeColor2));
+		int greyColor1 = context.getResources().getColor(R.color.chart_grey_1);
+		int greyColor2 = context.getResources().getColor(R.color.chart_grey_2);
+		mDrawables[1].getPaint().setShader(makeRadial(greyColor1, greyColor2));
 
-		int greyColor1 = context.getResources().getColor(R.color.grey_1);
-		int greyColor2 = context.getResources().getColor(R.color.grey_2);
-		mDrawables[2].getPaint().setShader(makeRadial(greyColor1, greyColor2));
+		int orangeColor1 = context.getResources().getColor(R.color.chart_orange_1);
+		int orangeColor2 = context.getResources().getColor(R.color.chart_orange_2);
+		mDrawables[2].getPaint().setShader(makeRadial(orangeColor1, orangeColor2));
+
 
 		{
 			MyShapeDrawable msd = (MyShapeDrawable) mDrawables[0];
 			msd.getStrokePaint().setStrokeWidth(1);
 		}
+
 		{
 			MyShapeDrawable msd = (MyShapeDrawable) mDrawables[1];
 			msd.getStrokePaint().setStrokeWidth(1);
 		}
+
 		{
 			MyShapeDrawable msd = (MyShapeDrawable) mDrawables[2];
 			msd.getStrokePaint().setStrokeWidth(1);
 		}
+
+		Typeface typeface = Typeface.createFromAsset(getContext().getAssets(), MAIN_PATH + "Bold" + ".ttf");
+		{// legend paint setup
+			textLegendPaint = new Paint();
+			textLegendPaint.setTypeface(typeface);
+			textLegendPaint.setTextSize(13 * density);
+
+			// center lines
+			centerLinePaint = new Paint();
+			centerLinePaint.setColor(0xFFdfdfdf);
+			centerLinePaint.setStyle(Paint.Style.STROKE);
+			centerLinePaint.setStrokeWidth(2);
+		}
+
+		if (games != null) {
+			{// center textValues
+//				winTotal = games.getWins() + " W";
+//				lossTotal = games.getLosses() + " L";
+//				drawnTotal = games.getDraws() + " D";
+				winTotal = 1183 + " W";
+				lossTotal = 833 + " L";
+				drawnTotal = 131 + " D";
+
+				centerTextPaint = new Paint();
+				centerTextPaint.setTypeface(typeface);
+				centerTextPaint.setTextSize(14 * density + 0.5f);
+			}
+
+		}
+
 	}
 
 	private static Shader makeRadial(int color1, int color2) {
-//			float x, float y, float radius, int color0, int color1, Shader.TileMode tile
 		return new RadialGradient(150, 150, 150, color1, color2, Shader.TileMode.CLAMP);
 	}
 
 	@Override
 	protected void onDraw(Canvas canvas) {
+		int width = canvas.getWidth();
+		centerPoint = width / 2;
 
-		canvas.drawColor(0xFFFFFFFF);
-		drawMyShapes(canvas);
+		canvas.drawColor(backgroundColor);
+
+		drawDonut(canvas);
+
+		// draw legend labels
+		{// wins
+			winsX = centerPoint - DONUT_WIDTH / 2 - TEXT_WIDTH;
+			winsY = TOP_OFFSET;
+			textLegendPaint.setColor(textGreenColor);
+			canvas.drawText(winsText, winsX, winsY, textLegendPaint);
+		}
+
+		{// losses
+			lossX = centerPoint + DONUT_WIDTH / 2 - TEXT_WIDTH;
+			lossY = TOP_OFFSET;
+			textLegendPaint.setColor(textOrangeColor);
+			canvas.drawText(lossText, lossX, lossY, textLegendPaint);
+		}
+
+		{// draws
+			drawsX = centerPoint + DONUT_WIDTH / 2 - TEXT_WIDTH;
+			drawsY = canvas.getHeight() /*- TOP_OFFSET*/;
+			textLegendPaint.setColor(textGreyColor);
+			canvas.drawText(drawsText, drawsX, drawsY, textLegendPaint);
+		}
 	}
 
+	private void drawDonut(Canvas canvas) {
+		int x = 0;
+		int y = 0;
 
-	private void drawMyShapes(Canvas canvas) {
-		int x = 10;
-		int y = 10;
-		int width = 300;
-		int height = 300;
-
-		int overlaySize = width / 2 + 20;
-
+		canvas.save();
+		canvas.translate(centerPoint - DONUT_WIDTH / 2, TOP_OFFSET);
 		// pie 1
-		mDrawables[0].setBounds(x, y, x + width, y + height);
+		mDrawables[0].setBounds(x, y, x + DONUT_WIDTH, y + DONUT_WIDTH);
 		mDrawables[0].draw(canvas);
 
 		// pie 2
-		mDrawables[1].setBounds(x, y, x + width, y + height);
+		mDrawables[1].setBounds(x, y, x + DONUT_WIDTH, y + DONUT_WIDTH);
 		mDrawables[1].draw(canvas);
 
 		// pie 3
-		mDrawables[2].setBounds(x, y, x + width, y + height);
+		mDrawables[2].setBounds(x, y, x + DONUT_WIDTH, y + DONUT_WIDTH);
 		mDrawables[2].draw(canvas);
 
 		// white overlay
 		canvas.save();
-		int xOffset = width / 2 - overlaySize / 2;
+		int overlayCenter = DONUT_OVERLAY_SIZE / 2;
+		int xOffset = DONUT_WIDTH / 2 - overlayCenter;
 		canvas.translate(xOffset, xOffset);
-		mDrawables[3].setBounds(x, y, x + overlaySize, y + overlaySize);
+
+		mDrawables[3].setBounds(x, y, x + DONUT_OVERLAY_SIZE, y + DONUT_OVERLAY_SIZE);
 		mDrawables[3].draw(canvas);
+
+		int widthBetweenLines = DONUT_OVERLAY_SIZE / 3;
+
+		// center lines
+		int topLineY = overlayCenter - widthBetweenLines / 2;
+		canvas.drawLine(LINE_LEFT_OFFSET, topLineY, DONUT_OVERLAY_SIZE - LINE_LEFT_OFFSET, topLineY, centerLinePaint);
+
+		int bottomLineY = overlayCenter + widthBetweenLines / 2;
+		canvas.drawLine(LINE_LEFT_OFFSET, bottomLineY, DONUT_OVERLAY_SIZE - LINE_LEFT_OFFSET, bottomLineY, centerLinePaint);
+
+
+		if (games != null) {
+			// draw values inside
+			{// wins total
+				float[] textWidths = new float[winTotal.length()];
+				centerTextPaint.getTextWidths(winTotal, textWidths);
+				float labelLength = 0;
+				for (float textWidth : textWidths) {
+					labelLength += textWidth;
+				}
+
+				float textStartPositionX = overlayCenter - labelLength / 2;
+				float textStartPositionY = topLineY - INSIDE_TOP_TEXT_OFFSET /*- centerTextPaint.getTextSize()*/;
+
+				centerTextPaint.setColor(textGreenColor);
+				canvas.drawText(winTotal, textStartPositionX, textStartPositionY, centerTextPaint);
+			}
+
+			{// losses total
+				float[] textWidths = new float[lossTotal.length()];
+				centerTextPaint.getTextWidths(lossTotal, textWidths);
+				float labelLength = 0;
+				for (float textWidth : textWidths) {
+					labelLength += textWidth;
+				}
+
+				float textStartPositionX = overlayCenter - labelLength / 2;
+				float textStartPositionY = overlayCenter + centerTextPaint.getTextSize()/2;
+
+				centerTextPaint.setColor(textOrangeColor);
+				canvas.drawText(lossTotal, textStartPositionX, textStartPositionY, centerTextPaint);
+			}
+
+			{// draws total
+				float[] textWidths = new float[drawnTotal.length()];
+				centerTextPaint.getTextWidths(drawnTotal, textWidths);
+				float labelLength = 0;
+				for (float textWidth : textWidths) {
+					labelLength += textWidth;
+				}
+
+				float textStartPositionX = overlayCenter - labelLength / 2;
+				float textStartPositionY = bottomLineY + INSIDE_TOP_TEXT_OFFSET + centerTextPaint.getTextSize();
+
+				centerTextPaint.setColor(textGreyColor);
+				canvas.drawText(drawnTotal, textStartPositionX, textStartPositionY, centerTextPaint);
+			}
+		}
+
+		canvas.restore();
 		canvas.restore();
 	}
 
-	public void setGames(Games games) {
+	public void setGames(GamesInfoByResult games) {
 		this.games = games;
+		init(getContext());
+		invalidate();
 	}
 
 
@@ -153,7 +326,7 @@ public class PieView extends View {
 		public MyShapeDrawable(Shape s) {
 			super(s);
 			mStrokePaint.setStyle(Paint.Style.STROKE);
-			mStrokePaint.setColor(0x26FFFFFF);
+			mStrokePaint.setColor(0x26FFFFFF);  // TODO set properly
 		}
 
 		public Paint getStrokePaint() {
