@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MyPieChart</string>
+
+    <string name="pie_chart_win_legend">Win %.0f%%</string>
+    <string name="pie_chart_loss_legend">Loss %.0f%%</string>
+    <string name="pie_chart_drawn_legend">Drawn %.0f%%</string>
 </resources>

@@ -22,7 +22,7 @@ public class PieView extends View {
 	private static final int TOP_OFFSET = 30;
 	private static final float LINE_LEFT_OFFSET = 10;
 	public static int DONUT_HALF_SIZE;
-	private int TEXT_WIDTH = 40;
+	private int TEXT_WIDTH;
 
 	public static final String MAIN_PATH = "fonts/trebuc-";
 
@@ -31,24 +31,10 @@ public class PieView extends View {
 	private float winsPercent;
 	private float lossPercent;
 	private float drawPercent;
-	private float winsDegree;
-	private float totalDegree;
-	private float startDegree;
-	private float drawDegree;
-	private float drawStartDegree;
-	private float lossDegree;
-	private float lossStartDegree;
 
 	private String winsText;
 	private String lossText;
 	private String drawsText;
-
-	private float winsX;
-	private float winsY;
-	private float lossX;
-	private float lossY;
-	private float drawsX;
-	private float drawsY;
 
 	private int textGreenColor = 0xFF57832f;
 	private int textOrangeColor = 0xFFe48629;
@@ -93,35 +79,36 @@ public class PieView extends View {
 		DONUT_HALF_SIZE = DONUT_SIZE / 2;
 		DONUT_OVERLAY_SIZE = (int) (112 * density);
 		INSIDE_TOP_TEXT_OFFSET = (int) (8 * density);
+		TEXT_WIDTH = (int) (20 * density);
 
 		backgroundColor = context.getResources().getColor(R.color.white);
 
 		mDrawables = new ShapeDrawable[4];
 
-		totalDegree = 360;
+		int totalDegree = 360;
 		// set wins
 		// calc percent
-		startDegree = -90;
+		int startDegree = -90;
 
 		if (games != null) {
 			winsPercent = ((float) games.getWins() / games.getTotal());
 		}
-		winsDegree = totalDegree * winsPercent;
-		winsText = "Win " + String.format("%.0f", winsPercent * 100) + "%";
+		float winsDegree = totalDegree * winsPercent;
+		winsText = getResources().getString(R.string.pie_chart_win_legend, winsPercent * 100);
 
 		if (games != null) {
 			drawPercent = ((float) games.getDraws() / games.getTotal());
 		}
-		drawDegree = totalDegree * drawPercent;
-		drawStartDegree = startDegree - winsDegree;
-		drawsText = "Drawn " + String.format("%.0f", drawPercent * 100) + "%";
+		float drawDegree = totalDegree * drawPercent;
+		float drawStartDegree = startDegree - winsDegree;
+		drawsText = getResources().getString(R.string.pie_chart_drawn_legend, drawPercent * 100);
 
 		if (games != null) {
 			lossPercent = ((float) games.getLosses() / games.getTotal());
 		}
-		lossDegree = totalDegree * lossPercent;
-		lossStartDegree = startDegree - winsDegree - drawDegree;
-		lossText = "Loss " + String.format("%.0f", lossPercent * 100) + "%";
+		float lossDegree = totalDegree * lossPercent;
+		float lossStartDegree = startDegree - winsDegree - drawDegree;
+		lossText = getResources().getString(R.string.pie_chart_loss_legend, lossPercent * 100);
 
 		mDrawables[0] = new MyShapeDrawable(new ArcShape(startDegree, -winsDegree));
 		mDrawables[1] = new MyShapeDrawable(new ArcShape(drawStartDegree, -drawDegree));
@@ -199,22 +186,22 @@ public class PieView extends View {
 
 		// draw legend labels
 		{// wins
-			winsX = centerPointX - DONUT_HALF_SIZE - TEXT_WIDTH;
-			winsY = TOP_OFFSET;
+			int winsX = centerPointX - DONUT_HALF_SIZE - TEXT_WIDTH;
+			int winsY = TOP_OFFSET;
 			textLegendPaint.setColor(textGreenColor);
 			canvas.drawText(winsText, winsX, winsY, textLegendPaint);
 		}
 
 		{// losses
-			lossX = centerPointX + DONUT_HALF_SIZE - TEXT_WIDTH;
-			lossY = TOP_OFFSET;
+			int lossX = centerPointX + DONUT_HALF_SIZE - TEXT_WIDTH;
+			int lossY = TOP_OFFSET;
 			textLegendPaint.setColor(textOrangeColor);
 			canvas.drawText(lossText, lossX, lossY, textLegendPaint);
 		}
 
 		{// draws
-			drawsX = centerPointX + DONUT_HALF_SIZE - TEXT_WIDTH;
-			drawsY = TOP_OFFSET + DONUT_SIZE + textLegendPaint.getTextSize();
+			int drawsX = centerPointX + DONUT_HALF_SIZE - TEXT_WIDTH;
+			int drawsY = (int) (TOP_OFFSET + DONUT_SIZE + textLegendPaint.getTextSize());
 			textLegendPaint.setColor(textGreyColor);
 			canvas.drawText(drawsText, drawsX, drawsY, textLegendPaint);
 		}
